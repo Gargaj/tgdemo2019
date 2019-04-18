@@ -16,6 +16,7 @@
 		<script src="threeJS/libs/inflate.min.js"></script>
 		<script src="threeJS/loaders/FBXLoader.js"></script>
 		<script src="threeJS/WebGL.js"></script>
+		<script src="js/PointAtMeshVertices.js"></script>
 
 		<script>
 			if ( WEBGL.isWebGLAvailable() === false ) {
@@ -25,6 +26,16 @@
 			var camera, scene, renderer;
 			var clock = new THREE.Clock();
 			var mixer;
+
+            var points = [];
+            var worldWidth = 200;
+            var worldRadius = worldWidth / 2;
+            var patchSize = 10;
+
+            var butterfly;
+            var butterflyWings;
+
+
 			init();
 			animate();
 			function init() {
@@ -56,28 +67,150 @@
 			}
 
 			function loadButterfly () {
-                // model
+                var material = new THREE.MeshBasicMaterial({
+                    color: 0x00ff00,
+                    wireframe: true,
+                    visible: false
+                });
+
+			    // model
                 var loader = new THREE.FBXLoader();
                 loader.load( 'anim/butterfly_anim_v004.fbx', function ( object ) {
                     mixer = new THREE.AnimationMixer( object );
                     var action = mixer.clipAction( object.animations[ 0 ] );
                     action.play();
-                    object.traverse( function ( child ) {
+
+                    butterfly = object;
+
+					object.traverse( function ( child ) {
                         if ( child.isMesh ) {
                             child.castShadow = true;
                             child.receiveShadow = true;
+                            child.material = material;
+
+							var pointArray = child.geometry.attributes.position;
+							placePoints(pointArray, child);
+
                         } else if ( child instanceof THREE.Camera ) {
                             camera = child;
                         }
                     } );
-					scene.add( object );
+
+                    scene.add( object );
                 } );
+			}
+
+            function placePoints(allpointPositions, child) {
+                // geometry
+                var geometry = new THREE.BufferGeometry();
+
+                // attributes
+                var positions = new Float32Array( allpointPositions.array.length); // 3 values per vertex
+                var rotations = new Float32Array( allpointPositions.array.length); // 1 values per vertex
+
+                geometry.addAttribute( 'position', new THREE.BufferAttribute( allpointPositions.array, 3) );
+                geometry.addAttribute( 'rotation', new THREE.BufferAttribute( rotations, 1 ) );
+
+                // material
+                var material = new THREE.PointsMaterial( {
+                    color: 0x000000,
+                    size: 0.1,
+                    map: null
+
+                } );
+
+                // points
+                var childePoints = new THREE.Points( geometry, material )
+
+                //child.geometry.addAttribute( 'points',  new THREE.Points( geometry, material ) );
+
+                //console.log(child);
+                child.add( childePoints );
+                points.push(childePoints) ;
+                //console.log(child.children[0].geometry.attributes.position);
+
+				//console.log(childePoints);
+			}
+
+            var sinTimer = 0;
+            function step(delta) {
+			    if (butterfly) {
+			        var index = 0;
+                    butterfly.traverse( function ( child ) {
+                        if ( child.isMesh && points[index]) {
+							var positions = points[index].geometry.attributes.position;
+                            var rotation = points[index].geometry.attributes.rotation;
+							var count = positions.count;
+							var meshGeoPos = child.geometry.attributes.position;
+
+                            //
+
+                            //points[index].scale.x = Math.sin(sinTimer) * 0.001;
+                            //points[index].scale.y = Math.sin(sinTimer) * 0.001;
+                            //points[index].scale.z = Math.sin(sinTimer) * 0.001;
+
+
+							for ( var j = 0; j < count; j ++ ) {
+
+                                var testTing = Math.floor(Math.random() * 100);
+
+                                if (testTing === 9) {
+                                    rotation.setX(j, 180);
+
+                                } else {
+                                    //points[index].material.size = 0.01;
+                                    rotation.setX(j, 1);
+                                }
+
+                                positions.setX( j, positions.getX( j ) + Math.sin(sinTimer) * 0.001);
+							}
+
+                            sinTimer += 1;
+
+							positions.needsUpdate = true; // important!
+
+                            index ++;
+                        }
+
+                    } );
+				}
+
+
+/*
+                    var positions = points.geometry.attributes.position;
+                    var count = position.count;
+                    var rotation = points.geometry.attributes.rotation;
+                    var speed = patchSize / 10;
+
+                    var meshGeoPos;
+
+                    butterfly.traverse( function ( child ) {
+                        if ( child.isMesh ) {
+                                meshGeoPos = child.geometry.attributes.position;
+
+                                for ( var i = 0; i < count; i ++ ) {
+                                    positions.setX( i, position.getX( i ) + 0.001);
+                                }
+
+
+                            positions.needsUpdate = true; // important!
+
+
+                        }
+                    } );
+*/
+
+
             }
 
 			function animate() {
-				requestAnimationFrame( animate );
-				var delta = clock.getDelta();
-				if ( mixer ) mixer.update( delta );
+                requestAnimationFrame( animate );
+                var delta = clock.getDelta();
+                step(delta);
+				if ( mixer ) {
+				    mixer.update( delta );
+                } else {
+				}
 
 				camera.near = 0.01;
 				camera.far = 10000;
