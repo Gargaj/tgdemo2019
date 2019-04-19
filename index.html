@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
+		<title>Rainbow Butterfly</title>
 		<meta charset="utf-8">
 		<style>
 			body {
-				margin: 0;
-				display: flex;
-				align-items: center;
-				justify-content: center;
 				background-color: black;
 			}
 			canvas {
-
-				height: 900px;
-				width: 900px;
+				position: absolute;
+				top: 50%;
+				margin-top: -400px;
+				left: 50%;
+				margin-left: -400px;
+				height: 800px;
+				width: 800px;
 			}
 		</style>
 	</head>
@@ -29,7 +30,6 @@
 		<script src="js/shaders/CopyShader.js"></script>
 		<script src="js/shaders/AfterimageShader.js"></script>
 		<script src="js/shaders/DigitalGlitch.js"></script>
-
 
 		<script src="js/postprocessing/EffectComposer.js"></script>
 		<script src="js/postprocessing/RenderPass.js"></script>
@@ -108,6 +108,7 @@
 
                 var audioLoader = new THREE.AudioLoader();
 
+                sound.crossOrigin = 'anonymous';
                 audioLoader.load( 'assets/Shuffle.wav', function( buffer ) {
                     sound.setBuffer( buffer );
                     sound.setLoop(false);
@@ -122,8 +123,8 @@
 
                 loadButterfly();
                 renderer = new THREE.WebGLRenderer( { antialias: true } );
-                renderer.setPixelRatio( window.devicePixelRatio );
-                renderer.setSize(900, 900 );
+                //renderer.setPixelRatio( window.devicePixelRatio );
+                renderer.setSize(800, 800 );
                 renderer.shadowMap.enabled = true;
                 container.appendChild( renderer.domElement );
 
@@ -161,6 +162,7 @@
 
 			    // model
                 var loader = new THREE.FBXLoader();
+                loader.crossOrigin = 'anonymous';
                 loader.load( 'anim/butterfly_anim_v006.fbx', function ( object ) {
                     mixer = new THREE.AnimationMixer( object );
                     var action = mixer.clipAction( object.animations[ 0 ] );
