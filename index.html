@@ -106,17 +106,33 @@
                 // attributes
                 var positions = new Float32Array( allpointPositions.array.length); // 3 values per vertex
                 var rotations = new Float32Array( allpointPositions.array.length); // 1 values per vertex
+                var colors = [];
 
+				console.log("1");
+
+				// colors
+				var color = new THREE.Color();
+				for ( var i = 0; i < allpointPositions.array.length; i++) {
+
+					var r = 1;//Math.random();
+					var g = 0.75;//Math.random();
+					var b = 0.5;//Math.random();
+					color.setRGB(r,g,b);
+					colors.push( color.r, color.g, color.b );
+				}
+
+				console.log("2");
                 geometry.addAttribute( 'position', new THREE.BufferAttribute( allpointPositions.array, 3) );
-                geometry.addAttribute( 'rotation', new THREE.BufferAttribute( rotations, 1 ) );
+				geometry.addAttribute( 'rotation', new THREE.BufferAttribute( rotations, 1 ) );
+				geometry.addAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
 
+				console.log("3");
                 // material
 				if (child.name.includes("Wing")) {
                 	var material = new THREE.PointsMaterial( {
-                    	color: 0x00ffff,
+                    	vertexColors: THREE.VertexColors,
                     	size: 0.1,
                     	map: null
-
                 	} );
 
                 	// points
@@ -147,34 +163,24 @@
                         if ( child.isMesh && points[index]) {
 							var positions = points[index].geometry.attributes.position;
                             var rotation = points[index].geometry.attributes.rotation;
+							var colors = points[index].geometry.attributes.color;
+		  					var color = new THREE.Color();
 							var count = positions.count;
-							var meshGeoPos = child.geometry.attributes.position;
-
-                            //
-
-                            //points[index].scale.x = Math.sin(sinTimer) * 0.001;
-                            //points[index].scale.y = Math.sin(sinTimer) * 0.001;
-                            //points[index].scale.z = Math.sin(sinTimer) * 0.001;
-
 
 							for ( var j = 0; j < count; j ++ ) {
+								color.setRGB(colors.getX(j), colors.getY(j), colors.getZ(j));
+		  						color.offsetHSL(sinTimer/100000, 0., 0.);
+								colors.setX( j, color.r );
+								colors.setY( j, color.g );
+								colors.setZ( j, color.b );
 
-                                var testTing = Math.floor(Math.random() * 100);
-
-                                if (testTing === 9) {
-                                    rotation.setX(j, 180);
-
-                                } else {
-                                    //points[index].material.size = 0.01;
-                                    rotation.setX(j, 1);
-                                }
-
-                                positions.setX( j, positions.getX( j ) + Math.sin(sinTimer) * 0.001);
+                                //positions.setX( j, positions.getX( j ) + Math.sin(sinTimer/100) * 0.1);
 							}
 
                             sinTimer += 1;
 
 							positions.needsUpdate = true; // important!
+							colors.needsUpdate = true;
 
                             index ++;
                         }
