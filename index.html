@@ -4,9 +4,16 @@
 		<meta charset="utf-8">
 		<style>
 			body {
-				background-color: #000;
-				margin: 0px;
-				overflow: hidden;
+				margin: 0;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background-color: black;
+			}
+			canvas {
+
+				height: 900px;
+				width: 900px;
 			}
 		</style>
 	</head>
@@ -17,9 +24,6 @@
 		<script src="js/loaders/FBXLoader.js"></script>
 		<script src="js/WebGL.js"></script>
 		<script src="src/PointAtMeshVertices.js"></script>
-
-
-
 
 		<!-- post effekt-->
 		<script src="js/shaders/CopyShader.js"></script>
@@ -54,7 +58,27 @@
             var composer;
             var renderPass;
             var glitchPass;
+            var analyser;
+            var sound;
 
+            var timeline = [
+				{
+				    'activated': false,
+					'startTime': 3
+				},
+                {
+                    'activated': false,
+                    'startTime': 3.5
+                },
+                {
+                    'activated': false,
+                    'startTime': 10
+                },
+                {
+                    'activated': false,
+                    'startTime': 30
+                }
+			];
 
 			init();
 
@@ -76,6 +100,26 @@
 				light.position.set( 0, 200, 100 );
 				scene.add( light );
 
+				//sound
+
+                var listener = new THREE.AudioListener();
+                camera.add( listener );
+                sound = new THREE.Audio( listener );
+
+                var audioLoader = new THREE.AudioLoader();
+
+                audioLoader.load( 'assets/Shuffle.wav', function( buffer ) {
+                    sound.setBuffer( buffer );
+                    sound.setLoop(false);
+                    sound.setVolume(0.1);
+                    sound.play();
+                });
+
+                sound.loop = false;
+
+                analyser = new THREE.AudioAnalyser( sound, 32 );
+                //analyser.getAverageFrequency()
+
                 loadButterfly();
                 renderer = new THREE.WebGLRenderer( { antialias: true } );
                 renderer.setPixelRatio( window.devicePixelRatio );
@@ -84,7 +128,8 @@
                 container.appendChild( renderer.domElement );
 
 			}
-
+            var afterimagePass;
+			var bloomPass;
 			function addRenderObjects () {
                 composer = new THREE.EffectComposer( renderer );
 
@@ -92,17 +137,12 @@
                 composer.addPass(renderPass);
                 renderPass.enderToScreen = true;
 
-/*
-                var afterimagePass = new THREE.AfterimagePass();
+                afterimagePass = new THREE.AfterimagePass();
                 composer.addPass( afterimagePass );
-                afterimagePass.uniforms.damp.value = 0.76;
-
-                glitchPass = new THREE.GlitchPass();
-                composer.addPass( glitchPass );
-*/
+                afterimagePass.uniforms.damp.value = 0.96;
 
 
-                var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+                bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
                 bloomPass.threshold = 1;
                 bloomPass.strength = 2;
 
@@ -134,8 +174,8 @@
                             child.receiveShadow = true;
                             child.material = material;
 
-							var pointArray = child.geometry.attributes.position;
-							placePoints(pointArray, child);
+							//var pointArray = child.geometry.attributes.position;
+							//placePoints(pointArray, child);
 
                         } else if ( child instanceof THREE.Camera ) {
                             camera = child;
@@ -218,6 +258,8 @@
 				}
 			}
 
+
+			var growingPoints = 0;
             var sinTimer = 0;
             function step(delta) {
 			    if (butterfly) {
@@ -229,6 +271,13 @@
 							var colors = points[index].geometry.attributes.color;
 		  					var color = new THREE.Color();
 							var count = positions.count;
+
+
+                            points[index].material.size = 0.05;
+
+                            if (growingPoints < 0.05) {
+                                growingPoints += 0.00005;
+							}
 
 							for ( var j = 0; j < count; j ++ ) {
 								color.setRGB(colors.getX(j), colors.getY(j), colors.getZ(j));
@@ -261,7 +310,9 @@
 				camera.updateProjectionMatrix();
 				renderer.setSize( window.innerWidth, window.innerHeight );
 			}
-	
+
+
+			var timer = 0;
 			function animate() {
                 requestAnimationFrame( animate );
                 var delta = clock.getDelta();
@@ -274,11 +325,78 @@
 				camera.near = 0.01;
 				camera.far = 10000;
 				camera.updateProjectionMatrix();
-				//renderer.render( scene, camera );
+
+                setTimeline(timer);
 
                 composer.render();
-			}
-		</script>
 
+
+                timer += 0.1;
+			}
+
+            var afterimagePassStrength = 0;
+			function setTimeline (timer) {
+				var soundTime = sound.context.currentTime - sound.startTime;
+
+				if (soundTime > timeline[0].startTime && !timeline[0].activated) {
+                    console.log('dotts added');
+
+                    glitchPass = new THREE.GlitchPass();
+                    composer.addPass( glitchPass );
+                    glitchPass.goWild = true;
+
+                    addDottsToButterfly();
+                    timeline[0].activated = true;
+				}
+
+                if (soundTime > timeline[1].startTime && !timeline[1].activated) {
+                    afterimagePass.enabled = false;
+                    bloomPass.enabled = false;
+                    removeGlitch(timeline[1]);
+                }
+
+                if (soundTime > timeline[2].startTime && !timeline[2].activated) {
+                    afterimagePass.enabled = true;
+                    bloomPass.enabled = true;
+
+                    setAfterimagePassStrength ();
+                }
+
+                if (afterimagePassStrength >=  1) {
+                    addGlitch(timeline[3])
+                }
+            }
+
+            function setAfterimagePassStrength () {
+                afterimagePass.uniforms.damp.value = afterimagePassStrength;
+
+                afterimagePassStrength += 0.002;
+            }
+
+            function addGlitch (timeToggle) {
+                glitchPass.enabled = true;
+                timeToggle.activated = true;
+            }
+
+            function removeGlitch (timeToggle) {
+                glitchPass.enabled = false;
+                timeToggle.activated = true;
+            }
+
+            function addDottsToButterfly () {
+			    if (butterfly) {
+                    butterfly.traverse( function ( child ) {
+                        if ( child.isMesh ) {
+                            var pointArray = child.geometry.attributes.position;
+                            placePoints(pointArray, child);
+                        }
+                    } );
+				}
+
+
+            }
+
+		</script>
 	</body>
 </html>
+
