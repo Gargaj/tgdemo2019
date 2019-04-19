@@ -1,6 +1,6 @@
 //Maya ASCII 2019 scene
 //Name: butterfly_anim_v006.ma
-//Last modified: Fri, Apr 19, 2019 05:36:30 PM
+//Last modified: Fri, Apr 19, 2019 05:40:53 PM
 //Codeset: UTF-8
 requires maya "2019";
 requires "stereoCamera" "10.0";
@@ -14,13 +14,13 @@ fileInfo "osv" "Mac OS X 10.14.2";
 createNode transform -s -n "persp";
 	rename -uid "473154BB-AF41-F28F-5733-D5859770016C";
 	setAttr ".v" no;
-	setAttr ".t" -type "double3" -4.1053676285437692 16.870629539907185 15.759461319921348 ;
-	setAttr ".r" -type "double3" -41.738352729602809 -13.399999999999991 0 ;
+	setAttr ".t" -type "double3" 9.8629985159664884 5.044772824257084 -4.9900718167137432 ;
+	setAttr ".r" -type "double3" -14.73835272960255 128.19999999999968 0 ;
 createNode camera -s -n "perspShape" -p "persp";
 	rename -uid "B73FB22B-8D45-431A-9179-56B2FD8EBBC9";
 	setAttr -k off ".v" no;
 	setAttr ".fl" 34.999999999999986;
-	setAttr ".coi" 23.100148349198349;
+	setAttr ".coi" 10.865072921303375;
 	setAttr ".imn" -type "string" "persp";
 	setAttr ".den" -type "string" "persp_depth";
 	setAttr ".man" -type "string" "persp_mask";

@@ -163,7 +163,7 @@
 			    // model
                 var loader = new THREE.FBXLoader();
                 loader.crossOrigin = 'anonymous';
-                loader.load( 'anim/butterfly_anim_v006.fbx', function ( object ) {
+                loader.load( 'anim/butterfly_anim_v010.fbx', function ( object ) {
                     mixer = new THREE.AnimationMixer( object );
                     var action = mixer.clipAction( object.animations[ 0 ] );
                     action.play();
@@ -358,14 +358,14 @@
                 }
 
                 if (soundTime > timeline[2].startTime && !timeline[2].activated) {
-                    afterimagePass.enabled = true;
-                    bloomPass.enabled = true;
+                    //afterimagePass.enabled = true;
+                    //bloomPass.enabled = true;
 
-                    setAfterimagePassStrength ();
+                    //setAfterimagePassStrength ();
                 }
 
                 if (afterimagePassStrength >=  1) {
-                    addGlitch(timeline[3])
+                    //addGlitch(timeline[3])
                 }
             }
 
