@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>Rainbow Butterfly</title>
+
 		<meta charset="utf-8">
 		<style>
 			body {
@@ -16,10 +16,16 @@
 				height: 800px;
 				width: 800px;
 			}
+			.demoTekst {
+				position: absolute;
+				color: #ffffff;
+			}
 		</style>
 	</head>
 
 	<body>
+
+
  		<script src="build/three.js"></script>
 		<script src="js/libs/inflate.min.js"></script>
 		<script src="js/loaders/FBXLoader.js"></script>
@@ -121,6 +127,8 @@
                 analyser = new THREE.AudioAnalyser( sound, 32 );
                 //analyser.getAverageFrequency()
 
+                addStares();
+
                 loadButterfly();
                 renderer = new THREE.WebGLRenderer( { antialias: true } );
                 //renderer.setPixelRatio( window.devicePixelRatio );
@@ -150,6 +158,26 @@
                 composer.addPass( bloomPass );
 
                 animate();
+
+            }
+
+            function addStares () {
+                var starsGeometry = new THREE.Geometry();
+
+                for ( var i = 0; i < 10000; i ++ ) {
+
+                    var star = new THREE.Vector3();
+                    star.x = THREE.Math.randFloatSpread( 2000 );
+                    star.y = THREE.Math.randFloatSpread( 2000 );
+                    star.z = THREE.Math.randFloatSpread( 2000 );
+                    starsGeometry.vertices.push( star );
+                }
+
+                var starsMaterial = new THREE.PointsMaterial( { color: 0x888888, size: 2} );
+
+                var starField = new THREE.Points( starsGeometry, starsMaterial );
+
+                scene.add( starField )
 
             }
 
@@ -399,6 +427,9 @@
             }
 
 		</script>
+
+
+		<h1 class="demoTekst">Rainbow Butterfly</h1>
 	</body>
 </html>
 
