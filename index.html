@@ -118,7 +118,7 @@
                 audioLoader.load( 'assets/søppel_v4.wav', function( buffer ) {
                     sound.setBuffer( buffer );
                     sound.setLoop(false);
-                    sound.setVolume(0.1);
+                    sound.setVolume(0.25);
                     sound.play();
                 });
 
@@ -183,7 +183,7 @@
 
 			function loadButterfly () {
                 var material = new THREE.MeshBasicMaterial({
-                    color: 0xeeeeee,
+                    color: 0xffffff,
                     wireframe: true,
                     visible: true
                 });
@@ -203,10 +203,6 @@
                             child.castShadow = true;
                             child.receiveShadow = true;
                             child.material = material;
-
-							//var pointArray = child.geometry.attributes.position;
-							//placePoints(pointArray, child);
-
                         } else if ( child instanceof THREE.Camera ) {
                             camera = child;
 
@@ -273,18 +269,12 @@
 		  			child.material = wingMaterial;
 	
 				} else {
-		  			/*
-                	var material = new THREE.PointsMaterial( {
-                    	color: 0xb9fff9,
-                    	size: 0.02,
-                    	map: null
-                	} );
-
+		  			// give body some color
+		  			child.material.color.setRGB(0.6, 0.3, 0.3);
                 	// points
                 	var childePoints = new THREE.Points( geometry, material )
     	            child.add( childePoints );
          	    	points.push(childePoints) ;
-		  			*/
 				}
 			}
 
@@ -309,6 +299,13 @@
                                 growingPoints += 0.00005;
 							}
 
+		  					
+							// body rainbow
+		  					color.setRGB(child.material.color.r, child.material.color.g, child.material.color.b);
+		  					color.offsetHSL(Math.abs(Math.sin(sinTimer/100))/5000, 0, 0);
+							child.material.color.setRGB(color.r, color.g, color.b);
+
+		  					// points rainbow effect
 							for ( var j = 0; j < count; j ++ ) {
 								color.setRGB(colors.getX(j), colors.getY(j), colors.getZ(j));
 		  						color.offsetHSL(Math.abs(Math.sin(sinTimer/100))/100, 0., 0.);
@@ -386,10 +383,10 @@
                 }
 
                 if (soundTime > timeline[2].startTime && !timeline[2].activated) {
-                    //afterimagePass.enabled = true;
-                    //bloomPass.enabled = true;
+                    afterimagePass.enabled = true;
+                    bloomPass.enabled = true;
 
-                    //setAfterimagePassStrength ();
+                    setAfterimagePassStrength ();
                 }
 
                 if (afterimagePassStrength >=  1) {
@@ -400,7 +397,7 @@
             function setAfterimagePassStrength () {
                 afterimagePass.uniforms.damp.value = afterimagePassStrength;
 
-                afterimagePassStrength += 0.002;
+                afterimagePassStrength = 0.8 + Math.sin(timer/10)*0.05;
             }
 
             function addGlitch (timeToggle) {
