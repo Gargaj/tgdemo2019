@@ -47,8 +47,7 @@
 				camera.rotation.set(0, 0, 0);
 
 				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0xa0a0a0 );
-				scene.fog = new THREE.Fog( 0xa0a0a0, 200, 1000 );
+				scene.background = new THREE.Color( 0x000000 );
 
 				light = new THREE.HemisphereLight( 0xffffff, 0x444444 );
 				light.position.set( 0, 200, 0 );
@@ -68,14 +67,14 @@
 
 			function loadButterfly () {
                 var material = new THREE.MeshBasicMaterial({
-                    color: 0x00ff00,
+                    color: 0x00ffff,
                     wireframe: true,
                     visible: false
                 });
 
 			    // model
                 var loader = new THREE.FBXLoader();
-                loader.load( 'anim/butterfly_anim_v004.fbx', function ( object ) {
+                loader.load( 'anim/butterfly_anim_v005.fbx', function ( object ) {
                     mixer = new THREE.AnimationMixer( object );
                     var action = mixer.clipAction( object.animations[ 0 ] );
                     action.play();
@@ -112,24 +111,32 @@
                 geometry.addAttribute( 'rotation', new THREE.BufferAttribute( rotations, 1 ) );
 
                 // material
-                var material = new THREE.PointsMaterial( {
-                    color: 0x000000,
-                    size: 0.1,
-                    map: null
+				if (child.name.includes("Wing")) {
+                	var material = new THREE.PointsMaterial( {
+                    	color: 0x00ffff,
+                    	size: 0.1,
+                    	map: null
 
-                } );
+                	} );
 
-                // points
-                var childePoints = new THREE.Points( geometry, material )
+                	// points
+                	var childePoints = new THREE.Points( geometry, material )
+                	var childePoints = new THREE.Points( geometry, material )
+    	            child.add( childePoints );
+         	    	points.push(childePoints) ;
+	
+				} else {
+                	var material = new THREE.PointsMaterial( {
+                    	color: 0xffffff,
+                    	size: 0.05,
+                    	map: null
+                	} );
 
-                //child.geometry.addAttribute( 'points',  new THREE.Points( geometry, material ) );
-
-                //console.log(child);
-                child.add( childePoints );
-                points.push(childePoints) ;
-                //console.log(child.children[0].geometry.attributes.position);
-
-				//console.log(childePoints);
+                	// points
+                	var childePoints = new THREE.Points( geometry, material )
+    	            child.add( childePoints );
+         	    	points.push(childePoints) ;
+				}
 			}
 
             var sinTimer = 0;
