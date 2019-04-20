@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
+		<link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
+
 
 		<meta charset="utf-8">
 		<style>
@@ -17,14 +19,85 @@
 				width: 800px;
 			}
 			.demoTekst {
-				position: absolute;
 				color: #ffffff;
+				margin-top: 162px;
+				text-align: center;
+				white-space: pre;
+				line-height: 1.5;
+				text-shadow: 0 0 50px #73d3ff;
+				font-family: 'Roboto';
+			}
+
+			.moon {
+				position: absolute;
+				top: calc(50% - 250px);
+				left: calc(50% - 250px);
+				width: 500px;
+				height: 500px;
+				border-radius: 50%;
+				box-shadow:
+						inset 0 0 20px #fff, /*white line*/
+
+						inset 20px 0 80px #000eff, /*dark blue right side */
+						inset -20px 0 150px #0ff,
+						inset -20px 0 500px #000000,
+
+						inset 20px 0 80px #0ff,  /*dark blue right side */
+						inset -20px 0 150px #000eff,
+						inset -20px 0 5000px rgba(0, 0, 0, 0.95),
+
+						0 0 50px #fff,
+						-10px 0 80px #000EFF,
+						10px 0 80px #0ff;
+			}
+
+			.lds-dual-ring {
+				display: inline-block;
+				width: 64px;
+				height: 64px;
+				position: absolute;
+				top: calc(50% - 32px);
+				left: calc(50% - 32px);
+			}
+			.lds-dual-ring:after {
+				content: " ";
+				display: block;
+				width: 46px;
+				height: 46px;
+				margin: 1px;
+				border-radius: 50%;
+/*				border-radius: 50%;
+				border: 5px solid #fff;
+				border-color: #fff transparent #fff transparent;*/
+				animation: lds-dual-ring 1.2s linear infinite;
+
+				box-shadow:
+						inset 0 0 2px #f0ff00, /*white line*/
+
+						inset 3px 0 8px #ff0002, /*dark blue right side */
+						inset -2px 0 10px #0ff,
+						inset -2px 0 5px #000000,
+
+						inset 2px 0 8px #0ff,  /*dark blue right side */
+						inset -2px 0 10px #000eff,
+						inset -2px 0 5px #f0ff00,
+
+						0 0 5px #f0ff00,
+						-1px 0 8px #73d3ff,
+						1px 0 8px #f0ff00;
+			}
+			@keyframes lds-dual-ring {
+				0% {
+					transform: rotate(0deg);
+				}
+				100% {
+					transform: rotate(360deg);
+				}
 			}
 		</style>
 	</head>
 
 	<body>
-
 
  		<script src="build/three.js"></script>
 		<script src="js/libs/inflate.min.js"></script>
@@ -69,25 +142,49 @@
 
             var timeline = [
 				{
+				    'title': 'add dots',
 				    'activated': false,
-					'startTime': 3
+					'startTime': 4
 				},
                 {
+                    'title': 'disable passes',
                     'activated': false,
-                    'startTime': 3.5
+                    'startTime': 4.5
                 },
                 {
+                    'title': 'enabled passes but not glitch',
                     'activated': false,
                     'startTime': 10
                 },
                 {
+                    'title': 'drums',
+                    'activated': false,
+                    'startTime': 16
+                },
+                {
+                    'title': 'enabled glitch',
+                    'activated': false,
+                    'startTime': 20
+                },
+                {
+                    'title': 'enabled glitch as music ends',
                     'activated': false,
                     'startTime': 30
+                },
+                {
+                    'title': 'super bloom',
+                    'activated': false,
+                    'startTime': 35
                 }
-			];
+
+
+            ];
 
 			init();
 
+
+			var textElement;
+            var moonContainer;
 			function init() {
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
@@ -106,26 +203,7 @@
 				light.position.set( 0, 200, 100 );
 				scene.add( light );
 
-				//sound
 
-                var listener = new THREE.AudioListener();
-                camera.add( listener );
-                sound = new THREE.Audio( listener );
-
-                var audioLoader = new THREE.AudioLoader();
-
-                sound.crossOrigin = 'anonymous';
-                audioLoader.load( 'assets/søppel_v4.wav', function( buffer ) {
-                    sound.setBuffer( buffer );
-                    sound.setLoop(false);
-                    sound.setVolume(0.25);
-                    sound.play();
-                });
-
-                sound.loop = false;
-
-                analyser = new THREE.AudioAnalyser( sound, 32 );
-                //analyser.getAverageFrequency()
 
                 addStares();
 
@@ -140,6 +218,27 @@
             var afterimagePass;
 			var bloomPass;
 			function addRenderObjects () {
+                //sound
+
+                var listener = new THREE.AudioListener();
+                camera.add( listener );
+                sound = new THREE.Audio( listener );
+
+                var audioLoader = new THREE.AudioLoader();
+
+                sound.crossOrigin = 'anonymous';
+                audioLoader.load( 'assets/søppel_v4.mp3', function( buffer ) {
+                    sound.setBuffer( buffer );
+                    sound.setLoop(false);
+                    sound.play();
+                });
+
+                sound.loop = false;
+
+                analyser = new THREE.AudioAnalyser( sound, 32 );
+                //analyser.getAverageFrequency()
+
+
                 composer = new THREE.EffectComposer( renderer );
 
                 renderPass = new THREE.RenderPass( scene, camera );
@@ -151,11 +250,16 @@
                 afterimagePass.uniforms.damp.value = 0.96;
 
 
-                bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
-                bloomPass.threshold = 1;
-                bloomPass.strength = 2;
-
+                bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( 800, 800 ), 0.3, 0.5, 0 ); //resolution, strength, radius, threshold
                 composer.addPass( bloomPass );
+
+
+                textElement = document.getElementById('demoTekst');
+                moonContainer = document.getElementById('moonContainer');
+                var loader = document.getElementById('loader');
+                loader.style.display = 'none';
+
+                textElement.textContent = 'Rainbow butterfly by  \r\n  Code: Pinillya \r\n  Cone and Animation: Espen \r\n  Music: Marvin  \r\n  Music: Swbern';
 
                 animate();
 
@@ -177,10 +281,10 @@
 
                 var starField = new THREE.Points( starsGeometry, starsMaterial );
 
-                scene.add( starField )
-
+                scene.add( starField );
             }
 
+            var action;
 			function loadButterfly () {
                 var material = new THREE.MeshBasicMaterial({
                     color: 0xffffff,
@@ -193,9 +297,10 @@
                 loader.crossOrigin = 'anonymous';
                 loader.load( 'anim/butterfly_anim_v010.fbx', function ( object ) {
                     mixer = new THREE.AnimationMixer( object );
-                    var action = mixer.clipAction( object.animations[ 0 ] );
+                    action = mixer.clipAction( object.animations[ 0 ] );
                     action.play();
-
+                    action.clampWhenFinished = true;
+                    action.repetitions = 0;
                     butterfly = object;
 
 					object.traverse( function ( child ) {
@@ -206,10 +311,10 @@
                         } else if ( child instanceof THREE.Camera ) {
                             camera = child;
 
-                            addRenderObjects ()
+
                         }
                     } );
-
+                    addRenderObjects ()
                     scene.add( object );
                 } );
 			}
@@ -362,8 +467,11 @@
 			}
 
             var afterimagePassStrength = 0;
+            var goingFullBloom = 0;
 			function setTimeline (timer) {
 				var soundTime = sound.context.currentTime - sound.startTime;
+
+				//console.log(soundTime);
 
 				if (soundTime > timeline[0].startTime && !timeline[0].activated) {
                     console.log('dotts added');
@@ -389,20 +497,81 @@
                     setAfterimagePassStrength ();
                 }
 
-                if (afterimagePassStrength >=  1) {
-                    //addGlitch(timeline[3])
+                // drums
+                if (soundTime > timeline[3].startTime && !timeline[3].activated) {
+                    afterimagePass.enabled = true;
+                    bloomPass.enabled = true;
+                    bloomPass.exposure = 1;
+                    bloomPass.threshold = 0;
+                    bloomPass.strength = 1;
+                    bloomPass.radius = 0;
+
+                    afterimagePass.uniforms.damp.value = 2;
+                    timeline[3].activated = true;
+                }
+
+                //Music glitch
+                if (soundTime > timeline[4].startTime && !timeline[4].activated) {
+                    afterimagePass.uniforms.damp.value = 0.1;
+                    afterimagePass.enabled = false;
+                    bloomPass.exposure = 0.0;
+                    bloomPass.threshold = 0;
+                    bloomPass.strength = 0;
+                    bloomPass.radius = 0.0;
+
+
+
+                    //setAfterimagePassStrength ();
+                    flikkerGlitch(timeline[4], 10);
+                }
+
+                //Music almost done
+                if (soundTime > timeline[5].startTime && !timeline[5].activated) {
+                    flikkerGlitch(timeline[5], 5);
+                }
+
+                //Music done
+                if (soundTime > timeline[6].startTime && !timeline[6].activated) {
+                    bloomPass.enabled = true;
+                    bloomPass.exposure = 2*goingFullBloom;
+                    bloomPass.threshold = 0*goingFullBloom;
+                    bloomPass.strength = 3*goingFullBloom;
+                    bloomPass.radius = 1*goingFullBloom;
+
+					if (goingFullBloom < 1) {
+                        goingFullBloom += 0.01;
+					} else {
+                        timeline[6].activated = true;
+					}
+                }
+
+                // The sound has stopped playing
+                if (!sound.isPlaying && timeline[6].activated  && textElement != null) {
+                    glitchPass.enabled = false;
+                    bloomPass.enabled = false;
+                    afterimagePass.enabled = false;
+
+					moonContainer.style.visibility = 'visible';
+                    textElement.textContent = 'Rainbow butterfly \r\n Code: Pinillya \r\n Cone and Animation: Espen \r\n Music: Marvin  \r\n Music: Swbern';
+
                 }
             }
 
             function setAfterimagePassStrength () {
                 afterimagePass.uniforms.damp.value = afterimagePassStrength;
-
                 afterimagePassStrength = 0.8 + Math.sin(timer/10)*0.05;
             }
 
-            function addGlitch (timeToggle) {
+            var flikkerTimer = 0;
+            function flikkerGlitch (timeToggle, time) {
                 glitchPass.enabled = true;
-                timeToggle.activated = true;
+
+                if (flikkerTimer > time) {
+                    removeGlitch(timeToggle);
+                    flikkerTimer = 0;
+				} else {
+                    flikkerTimer += 0.1;
+				}
             }
 
             function removeGlitch (timeToggle) {
@@ -419,14 +588,17 @@
                         }
                     } );
 				}
-
-
             }
 
 		</script>
 
 
-		<h1 class="demoTekst">Rainbow Butterfly</h1>
+		<div class="lds-dual-ring" id="loader"></div>
+		<div class="moon" id="moonContainer" style="visibility: hidden">
+			<h2 class="demoTekst" id="demoTekst">
+			</h2>
+		</div>
+
 	</body>
 </html>
 
